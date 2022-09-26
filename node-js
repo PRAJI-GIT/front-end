@@ -1,0 +1,78 @@
+// Set the projects webroot folder
+var webroot = "D:/webroot/", 
+
+http = require('http'), 
+path = require('path'),
+fs = require('fs');
+
+// Create the server object
+var server = http.createServer(function (req, res) {
+
+	console.log("------------------------------------------------------------------");
+	
+	// If no content is requests takedefault
+	if(req.url == '/'){
+		req.url = '/index.html';
+	}
+	
+	// Log the time when new request is incoming
+	console.log(new Date());
+	console.log("Incoming request: " + req.url);
+	
+	// Create the target path of the requested resource
+	var targetPath = path.normalize(webroot + req.url)
+	
+	// Extract the extension from requested resource (very simple)
+	// We will later use this for mimetype
+	var extension = path.extname(targetPath).substr(1);
+	
+	// Log some request informaiton to see what is requested
+	console.log("Absolute target will be : " + targetPath);
+	console.log("Extension is: " + extension);
+	
+	var mimeType = 'text/html';
+	
+	// check if requested resource exists
+	fs.exists(targetPath, function(exists){
+	
+		if(!exists){
+		
+		  // Return error when resource does not exist
+			response.writeHead(404, {'Content-Type': mimeType});	
+			response.end("Error 404 - \""+req.url+"\" not found!");
+			
+		}else{
+		
+		  // Return the resource with correct mimetype
+			if(extension == 'css'){
+				mimeType = 'text/css';
+			}
+			
+			if(extension == 'js'){
+				mimeType = 'application/x-javascript';
+			}
+			
+			if(extension == 'htm'){
+				mimeType = 'text/html';
+			}
+			
+			if(extension == 'png'){
+				mimeType = 'image/png';
+			}
+			
+			console.log("Using mimeType: " + mimeType);
+			response.writeHead(200, {'Content-Type': mimeType});
+			
+			fs.createReadStream(targetPath).pipe(response);
+		}
+	
+	});
+		
+});
+
+// start the server listening on port 2222
+server.listen(2222);
+
+// Log that server has been started
+console.log('Server running');
+console.log(server.address());
